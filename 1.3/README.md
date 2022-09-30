@@ -25,7 +25,7 @@
  git commit branching/rebase.sh -m 'add new line'
 ```
 **Промежуточный результат**
-![](c:\users\s.gnetov\documents\net\devops-netology\1.3\img\1.png)
+![](img/1.png)
 
 ***Подготовка файла rebase.sh.***
 ```commandline
@@ -49,7 +49,7 @@ git checkout main
 git merge git-merge
 git push origin
 ```
-![](c:\users\s.gnetov\documents\net\devops-netology\1.3\img\2.png)
+![](img/2.png)
 
 ***Rebase***
 ```commandline
@@ -66,4 +66,4 @@ git checkout main
 git merge git-rebase
 git push
 ```
-![](c:\users\s.gnetov\documents\net\devops-netology\1.3\img\3.png)
+![](img/3.png)
