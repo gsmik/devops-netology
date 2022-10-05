@@ -83,7 +83,6 @@ bdfea50cc8 remove unused
 fd4f7eb0b9 remove prefixed io
 5ac311e2a9 main: synchronize writes to VT100-faker on Windows
 # Нашли который нужен (по описанию подходит 5ac311e2a9)Проверяем
-```
 git show 5ac311e2a9 --name-only
 
 commit 5ac311e2a91e381e2f52234668b49ba670aa0fe5
