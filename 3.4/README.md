@@ -49,7 +49,7 @@
     After=network-online.target
     [Service]
     Type=simple
-    ExecStart=/opt/node_exporter/node_exporter
+    ExecStart=/opt/node_exporter/node_exporter $OPTS
     EnvironmentFile=/etc/default/node_exporter
     [Install]
     WantedBy=multi-user.target
@@ -59,7 +59,12 @@
     $ sudo systemctl start node_exporter
     ```
     * предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
-    </br>*`EnvironmentFile=/etc/default/node_exporter` добавлена строка в unit-файл*
+    </br>*`EnvironmentFile=/etc/default/node_exporter` добавлена строка в unit-файл*</br>*Файл с опциями выглядит так, таким образом при добавлении в переменную `OPTS=` параметры взятые из команды `./node_exporter --help` можно управлять опциями запуска службы.*
+   ```bash
+    $ cat /etc/default/node_exporter
+      OPTS="--log.level=info --collector.cpu.guest"
+    ```
+    ![](img/1.png)
     * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
     </br>*стартует, перезапускается, останавливается и автоматически стартует после перезагрузки*
 
