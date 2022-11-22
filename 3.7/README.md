@@ -67,10 +67,44 @@ parm:           mode:Mode of operation; 0 for balance-rr, 1 for active-backup, 2
   * mode: 2 for balance-xor
   * mode: 5 for balance-tlb
   * mode: 6 for balance-alb (charp)
-* Пример конфига
-```bash
-
-```
+* Пример конфига LACP
+  * /etc/netplan/50-cloud-init.yaml
+  ```bash
+  network:
+      ethernets:
+          enp3s0:
+              addresses:
+              - 192.168.1.57/24
+              gateway4: 192.168.1.1
+              nameservers:
+                  addresses:
+                  - 8.8.8.8
+                  - 8.8.4.4
+                  search: []
+              optional: true
+          enp5s0:
+              addresses:
+              - 192.168.1.58/24
+              gateway4: 192.168.1.1
+              nameservers:
+                  addresses:
+                  - 8.8.8.8
+                  - 8.8.4.4
+                  search: []
+              optional: true
+      version: 2
+  ```
+  * nano /etc/netplan/bond0.yaml
+  ```bash
+  network:
+     bonds:
+       bond0:
+        addresses: [192.168.1.59/24]
+        gateway4: 192.168.1.1
+        nameservers:
+          addresses: [8.8.8.8,8.8.4.4]
+        interfaces: [enp3s0, enp5s0]
+  ```
 5. Сколько IP адресов в сети с маской /29 ? Сколько /29 подсетей можно получить из сети с маской /24. Приведите несколько примеров /29 подсетей внутри сети 10.10.10.0/24.
 *  IP адресов 8 (1 IP-адрес сети, 6 ip адресов для хостов, 1 IP broadcast)
 *  32 подсети можно получить из сети с маской /24
@@ -86,12 +120,13 @@ parm:           mode:Mode of operation; 0 for balance-rr, 1 for active-backup, 2
 * 10.64.0.0/26 - на 64 адреса
 7. Как проверить ARP таблицу в Linux, Windows? Как очистить ARP кеш полностью? Как из ARP таблицы удалить только один нужный IP? 
 * Windows
-  * Показать ARP-таблицу `arp -a` или `arp -g` или `arp -a -v`
-  * Очистить кэш `arp -d *`
+  * Показать ARP-таблицу: `arp -a` или `arp -g` или `arp -a -v`
+  * Очистить кэш весь: `arp -d *`
+  * Удалить только один IP: `arp -d <ip адрес>`
 * Linux
-  * Показать ARP-таблицу `ip n`
-  * Очистить `ip n flush all`
-
+  * Показать ARP-таблицу: `ip n`
+  * Очистить кэш весь: `ip n flush all`
+  * Удалить только один IP:  `ip neigh del dev <интерфейc> <IP адрес>`
 
 *В качестве решения ответьте на вопросы и опишите, каким образом эти ответы были получены*
 
