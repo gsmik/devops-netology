@@ -236,12 +236,29 @@ vagrant@vagrant:~$
 ```
 
 3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
-
-
+```bash
+vagrant@vagrant:~$ ss -ltpn
+State                       Recv-Q                      Send-Q                                             Local Address:Port                                             Peer Address:Port                      Process                      
+LISTEN                      0                           4096                                               127.0.0.53%lo:53                                                    0.0.0.0:*                                                      
+LISTEN                      0                           128                                                      0.0.0.0:22                                                    0.0.0.0:*                                                      
+LISTEN                      0                           128                                                         [::]:22                                                       [::]:*                                                      
+```
+ - dns
+ - ssh
 4. Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
+```bash
+agrant@vagrant:~$ ss -lupn
+State                       Recv-Q                      Send-Q                                                Local Address:Port                                           Peer Address:Port                     Process                      
+UNCONN                      0                           0                                                     127.0.0.53%lo:53                                                  0.0.0.0:*                                                     
+UNCONN                      0                           0                                                192.168.83.27%eth1:68                                                  0.0.0.0:*                                                     
+UNCONN                      0                           0                                                    10.0.2.15%eth0:68                                                  0.0.0.0:*                                                     
+```
+
+ - dns
+ - bootpc
 
 5. Используя diagrams.net, создайте L3 диаграмму вашей домашней сети или любой другой сети, с которой вы работали. 
-
+![](img/5_1.png)
 
 *В качестве решения ответьте на вопросы, опишите, каким образом эти ответы были получены и приложите по неоходимости скриншоты*
 
