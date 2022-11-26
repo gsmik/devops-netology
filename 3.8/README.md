@@ -36,8 +36,9 @@ show ip route x.x.x.x/32
 show bgp x.x.x.x/32
 ```
  ![](img/1_1.png)
-* show ip route 
+* show ip route </br>
  ![](img/1_2.png)
+
 * show bgp
   <details>
 
