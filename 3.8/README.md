@@ -220,9 +220,23 @@ insmod /lib/modules/5.4.0-110-generic/kernel/drivers/net/dummy.ko numdummies=0 n
 vagrant@vagrant:~$ ip a sh dummy0
 3: dummy0: <BROADCAST,NOARP> mtu 1500 qdisc noop state DOWN group default qlen 1000
     link/ether c6:0f:50:93:f3:58 brd ff:ff:ff:ff:ff:ff
+agrant@vagrant:~$ sudo ip route add 10.1.4.12 via 192.168.83.1
+vagrant@vagrant:~$ sudo ip route add 10.1.10.0/29 via 192.168.83.1
+vagrant@vagrant:~$ ip r
+default via 10.0.2.2 dev eth0 proto dhcp src 10.0.2.15 metric 100 
+default via 192.168.83.1 dev eth1 proto dhcp src 192.168.83.27 metric 100 
+10.0.2.0/24 dev eth0 proto kernel scope link src 10.0.2.15 
+10.0.2.2 dev eth0 proto dhcp scope link src 10.0.2.15 metric 100 
+10.1.4.12 via 192.168.83.1 dev eth1 
+10.1.10.0/29 via 192.168.83.1 dev eth1 
+192.168.83.0/24 dev eth1 proto kernel scope link src 192.168.83.27 
+192.ip a sh dummy0168.83.1 dev eth1 proto dhcp scope link src 192.168.83.27 metric 100 
+vagrant@vagrant:~$ 
+
 ```
 
 3. Проверьте открытые TCP порты в Ubuntu, какие протоколы и приложения используют эти порты? Приведите несколько примеров.
+
 
 4. Проверьте используемые UDP сокеты в Ubuntu, какие протоколы и приложения используют эти порты?
 
