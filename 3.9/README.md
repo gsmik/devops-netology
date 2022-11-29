@@ -205,6 +205,7 @@
 
 9. Установите и настройте фаервол ufw на web-сервер из задания 3. Откройте доступ снаружи только к портам 22,80,443
    ```bash
+   vagrant@vm1:~$ sudo ufw enable
    vagrant@vm1:~$ sudo ufw app list
    Available applications:
    Apache
