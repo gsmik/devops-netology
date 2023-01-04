@@ -60,12 +60,30 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+import os
+
+targ_folder = "~/learning/devops-netology"
+bash_command = ["cd "+targ_folder, "git status"]
+print(f'Target folder: {targ_folder}')
+
+result_os = os.popen(' && '.join(bash_command)).read()
+
+for result in result_os.split('\n'):
+    if result.find('modified') != -1:
+        prepare_result = result.replace('\tmodified:   ', '').replace('#','')
+        print('modified'+(os.path.join(targ_folder, prepare_result)))
+    elif result.find('new file') != -1:
+        prepare_result = result.replace('\tnew file:   ', '').replace('#', '')
+        print('new file:'+(os.path.join(targ_folder, prepare_result)))
 ```
 
 ### Вывод скрипта при запуске при тестировании:
-```
-???
+```bash
+Target folder: ~/learning/devops-netology
+Status new file:~/learning/devops-netology/4.2/src/4-2-2.py
+Status modified:~/learning/devops-netology/4.2/README.md
+Status modified:~/learning/devops-netology/4.2/src/4-2-2.py
 ```
 
 ------
@@ -76,12 +94,49 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+import os
+import sys
+
+targ_folder = "./"
+if len(sys.argv) >= 2:
+    targ_folder = sys.argv[1]
+    print(f"Requested target folder :  {targ_folder}")
+    if not os.path.isdir(targ_folder):
+        sys.exit("Target folder doesn't exist :" + {targ_folder} )
+bash_command = ["cd "+targ_folder, "git status 2>&1"]
+result_os = os.popen(' && '.join(bash_command)).read()
+if result_os.find ('not a git') != -1:
+    sys.exit ("but it's not a git repository: " + {targ_folder})
+git_command = ["git rev-parse --show-toplevel"]
+git_top_level = (os.popen(' && '.join(git_command)).read()).replace('\n', '/')
+print(f"Yours GIT directory is: {git_top_level}" )
+for result in result_os.split('\n'):
+    if result.find('modified') != -1:
+        prepare_result = result.replace('\tmodified:   ', '').replace('#','')
+        print('modified'+(os.path.join(targ_folder, prepare_result)))
+    elif result.find('new file') != -1:
+        prepare_result = result.replace('\tnew file:   ', '').replace('#', '')
+        print('new file:'+(os.path.join(targ_folder, prepare_result)))
 ```
 
 ### Вывод скрипта при запуске при тестировании:
-```
-???
+```bash
+s3a1@s3a1-All-Series  ~/learning/devops-netology   main ±✚  python3 4.2/src/4-2-3.py
+Yours GIT directory is: /home/s3a1/learning/devops-netology/
+new file:./4.2/src/4-2-2.py
+new file:./4.2/src/4-2-3.py
+modified./4.2/README.md
+modified./4.2/src/4-2-3.py
+---------------------------
+ s3a1@s3a1-All-Series  ~/learning/devops-netology/4.2/src   main ±✚  python3 4-2-3.py ~/learning/devops-netology/3.1/          
+Requested target folder :  /home/s3a1/learning/devops-netology/3.1/
+Yours GIT directory is: /home/s3a1/learning/devops-netology/
+new file:/home/s3a1/learning/devops-netology/3.1/../4.2/src/4-2-2.py
+new file:/home/s3a1/learning/devops-netology/3.1/../4.2/src/4-2-3.py
+modified/home/s3a1/learning/devops-netology/3.1/../4.2/README.md
+modified/home/s3a1/learning/devops-netology/3.1/../4.2/src/4-2-3.py
+
 ```
 
 ------
@@ -101,12 +156,57 @@ for result in result_os.split('\n'):
 
 ### Ваш скрипт:
 ```python
-???
+#!/usr/bin/env python3
+
+from datetime import datetime
+import socket
+import time
+hosts = {
+    'drive.yandex.ru': '0',
+    'mail.yandex.ru': '0',
+    'yandex.ru': '0'}
+for host in hosts:
+    init_ip = socket.gethostbyname(host)
+    hosts[host] = init_ip
+while True:
+    date = datetime.now()
+    print(date)
+    for host in hosts:
+        oip = hosts[host]
+        nip = socket.gethostbyname(host)
+        if nip != oip:
+            hosts[host] = nip
+            print(date, host + " " + "IP changed: old IP" + " " +oip , "new IP"+ " " +nip)
+        print(host + " " +hosts[host])
+    time.sleep(15)
 ```
+**Заменил сервисы на:**
+* 'drive.yandex.ru'
+* 'mail.yandex.ru'
+* 'yandex.ru
 
 ### Вывод скрипта при запуске при тестировании:
-```
-???
+```bash
+✘ s3a1@s3a1-All-Series  ~/learning/devops-netology/4.2/src   main ±✚  python3 4-2-4.py
+2023-01-04 23:29:45.605303
+drive.yandex.ru 213.180.204.242
+mail.yandex.ru 77.88.21.37
+yandex.ru 77.88.55.80
+2023-01-04 23:30:00.620912
+drive.yandex.ru 213.180.204.242
+mail.yandex.ru 77.88.21.37
+2023-01-04 23:30:00.620912 yandex.ru IP changed: old IP 77.88.55.80 new IP 5.255.255.5
+yandex.ru 5.255.255.5
+2023-01-04 23:30:15.635804
+drive.yandex.ru 213.180.204.242
+mail.yandex.ru 77.88.21.37
+2023-01-04 23:30:15.635804 yandex.ru IP changed: old IP 5.255.255.5 new IP 5.255.255.60
+yandex.ru 5.255.255.60
+2023-01-04 23:30:30.651581
+drive.yandex.ru 213.180.204.242
+mail.yandex.ru 77.88.21.37
+yandex.ru 5.255.255.60
+
 ```
 
 ------
