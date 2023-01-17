@@ -37,7 +37,7 @@
 - Чем Ansible выгодно отличается от других систем управление конфигурациями? \
 **Написан на python, не требует установки агентов на обслуживаемые хосты**
 - Какой, на ваш взгляд, метод работы систем конфигурации более надёжный push или pull? \
-Вопрос непонятен. Все зависит от поставленной задачи
+Вопрос непонятен. Все зависит от поставленной задачи \
 **push** - подходит для развертывание идентичных систем \
 **pull** - позволяет костомизировать каждый хост
 
@@ -51,8 +51,25 @@
 - Ansible
 
 *Приложить вывод команд установленных версий каждой из программ, оформленный в markdown.*
+```bash
+ s3a1@s3a1-All-Series  ~/learning/vagrant  vagrant --version
+Vagrant 2.2.6
+ s3a1@s3a1-All-Series  ~/learning/vagrant  ansible --version
+ansible [core 2.12.10]
+  config file = /etc/ansible/ansible.cfg
+  configured module search path = ['/home/s3a1/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /usr/lib/python3/dist-packages/ansible
+  ansible collection location = /home/s3a1/.ansible/collections:/usr/share/ansible/collections
+  executable location = /usr/bin/ansible
+  python version = 3.8.10 (default, Nov 14 2022, 12:59:47) [GCC 9.4.0]
+  jinja version = 2.10.1
+  libyaml = True
+ s3a1@s3a1-All-Series  ~/learning/vagrant  vboxmanage -v    
+6.1.38_Ubuntur153438
 
-## Задача 4 (*)к
+```
+
+## Задача 4 (*)
 
 Воспроизвести практическую часть лекции самостоятельно.
 
