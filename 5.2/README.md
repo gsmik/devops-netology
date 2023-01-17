@@ -78,3 +78,11 @@ ansible [core 2.12.10]
 ```
 docker ps
 ```
+**Ответ**
+```bash
+vagrant@server1:~$ docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+vagrant@server1:~$ docker --version
+Docker version 20.10.22, build 3a2c30b
+
+```
