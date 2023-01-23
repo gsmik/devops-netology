@@ -195,8 +195,33 @@ https://hub.docker.com/repository/docker/gsmik/nginx
 - Добавьте еще один файл в папку ```/data``` на хостовой машине;
 - Подключитесь во второй контейнер и отобразите листинг и содержание файлов в ```/data``` контейнера.
 
+**Ответ**
+<details>
+
+```bash
+vagrant@server1:~/task3$ docker run -it -d --name centos -v /data:/data centos /bin/bash
+5e36992389a47730218779bcd7b9bd85f72bcb95c3bdef342b2effd11a9b9b04
+vagrant@server1:~/task3$ docker run -it -d --name debian -v /data:/data debian /bin/bash
+434b386e5a73fe35a3e0af03caee1b6f913fb6a1ebc2e31efff5e0cfaf7e45c9
+vagrant@server1:~/task3$ docker ps -a
+CONTAINER ID   IMAGE     COMMAND       CREATED              STATUS          PORTS     NAMES
+434b386e5a73   debian    "/bin/bash"   44 seconds ago       Up 43 seconds             debian
+5e36992389a4   centos    "/bin/bash"   About a minute ago   Up 58 seconds             centos
+vagrant@server1:~/task3$ docker exec -it centos bash
+root@5e36992389a4 /# touch /data/from.centos.txt
+root@5e36992389a4 /# ls /data/
+from.centos.txt
+vagrant@server1:~/task3$ sudo touch /data/from.host.txt
+vagrant@server1:~/task3$ ls /data/
+from.centos.txt  from.host.txt
+vagrant@server1:~/task3$ docker exec -it debian bash
+root@434b386e5a73:/# ls /data
+from.centos.txt  from.host.txt
+```
+</details>
+
 ## Задача 4 (*)
 
 Воспроизвести практическую часть лекции самостоятельно.
 
-Соберите Docker образ с Ansible, загрузите на Docker Hub и пришлите ссылку вместе с остальными ответами к задачам.
+Соберите Docker образ с Ansible, загрузите на Docker Hub и пришлите ссылку вместе с остальными ответами к задачам.git
