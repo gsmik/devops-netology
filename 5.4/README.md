@@ -42,7 +42,7 @@ Please go to https://oauth.yandex.ru/authorize?response_type=token&client_id=1a*
 Please enter OAuth token: [y0_AgAAAAABNTu******************************auS__B9rtUIPDQ] 
 You have one cloud available: 'cloud-gsmik' (id = b***************q). It is going to be used by default.
 Please choose folder to use:
- [1] default (id = b1gm39s04fv7d27dv38t)
+ [1] default (id = b**************t)
  [2] Create a new folder
 Please enter your numeric choice: 1
 Your current folder has been set to 'default' (id = b*************t).
@@ -153,7 +153,7 @@ $ yc compute instance list
 +----------------------+--------+---------------+---------+----------------+---------------+
 |          ID          |  NAME  |    ZONE ID    | STATUS  |  EXTERNAL IP   |  INTERNAL IP  |
 +----------------------+--------+---------------+---------+----------------+---------------+
-| fhmc2lsakqmh5vogkfmf | node01 | ru-central1-a | RUNNING | 158.160.56.240 | 192.168.101.8 |
+| fhmc2lsakqmh5vogkfmf | node01 | ru-central1-a | RUNNING | 158.160.39.40  | 192.168.101.8 |
 +----------------------+--------+---------------+---------+----------------+---------------+
 
 ```
