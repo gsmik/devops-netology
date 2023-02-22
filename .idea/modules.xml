@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/devops-netology.iml" filepath="$PROJECT_DIR$/.idea/devops-netology.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../git/.idea/git.iml" filepath="$PROJECT_DIR$/../git/.idea/git.iml" />
     </modules>
   </component>
 </project>
