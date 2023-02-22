@@ -300,8 +300,67 @@ mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES;
 Измените `engine` и **приведите время выполнения и запрос на изменения из профайлера в ответе**:
 - на `MyISAM`
 - на `InnoDB`
+* Установите профилирование `SET profiling = 1`.
+```shell
+mysql> set profiling=1;
+Query OK, 0 rows affected, 1 warning (0.00 sec)
+```
+* Изучите вывод профилирования команд `SHOW PROFILES;`.
+```shell
+mysql> show profiles;
++----------+------------+----------------+
+| Query_ID | Duration   | Query          |
++----------+------------+----------------+
+|        1 | 0.00004975 | show profiling |
++----------+------------+----------------+
+1 row in set, 1 warning (0.00 sec)
 
+```
+* Исследуйте, какой `engine` используется в таблице БД `test_db` и **приведите в ответе**.
+```shell
+mysql> SHOW TABLE STATUS;
++--------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+---------------------+------------+--------------------+----------+----------------+---------+
+| Name   | Engine | Version | Row_format | Rows | Avg_row_length | Data_length | Max_data_length | Index_length | Data_free | Auto_increment | Create_time         | Update_time         | Check_time | Collation          | Checksum | Create_options | Comment |
++--------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+---------------------+------------+--------------------+----------+----------------+---------+
+| orders | InnoDB |      10 | Dynamic    |    5 |           3276 |       16384 |               0 |            0 |         0 |              6 | 2023-02-22 10:35:54 | 2023-02-22 10:35:54 | NULL       | utf8mb4_0900_ai_ci |     NULL |                |         |
++--------+--------+---------+------------+------+----------------+-------------+-----------------+--------------+-----------+----------------+---------------------+---------------------+------------+--------------------+----------+----------------+---------+
+1 row in set (0.01 sec)
 
+```
+Измените `engine` и **приведите время выполнения и запрос на изменения из профайлера в ответе**:
+- на `MyISAM`
+- на `InnoDB`
+````shell
+mysql> alter table orders engine=MyISAM;
+Query OK, 5 rows affected (0.08 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> alter table orders engine=InnoDB;
+Query OK, 5 rows affected (0.08 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SHOW profiles;
++----------+------------+------------------------------------+
+| Query_ID | Duration   | Query                              |
++----------+------------+------------------------------------+
+|        4 | 0.00075325 | show status                        |
+|        5 | 0.00008800 | SHOW TABLE STATUS                  |
+|        6 | 0.00976800 | show status                        |
+|        7 | 0.00004875 | SHOW TABLE STATUS                  |
+|        8 | 0.00004650 | SHOW TABLE STATUS                  |
+|        9 | 0.00005000 | SHOW TABLE STATUS                  |
+|       10 | 0.00018600 | SELECT DATABASE()                  |
+|       11 | 0.00135850 | show databases                     |
+|       12 | 0.00107950 | show tables                        |
+|       13 | 0.01886550 | SHOW TABLE STATUS                  |
+|       14 | 0.00014275 | alter tables order engine = MyISAM |
+|       15 | 0.00004900 | alter table order engine = MyISAM  |
+|       16 | 0.00011375 | SELECT DATABASE()                  |
+|       17 | 0.08821425 | alter table orders engine=MyISAM   |
+|       18 | 0.09088050 | alter table orders engine=InnoDB   |
++----------+------------+------------------------------------+
+15 rows in set, 1 warning (0.00 sec)
+````
 ## Задача 4 
 
 Изучите файл `my.cnf` в директории /etc/mysql.
@@ -314,6 +373,8 @@ mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES;
 - Размер файла логов операций 100 Мб
 
 Приведите в ответе измененный файл `my.cnf`.
+*Ответ*
+
 
 ---
 
