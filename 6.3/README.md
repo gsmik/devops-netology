@@ -247,6 +247,49 @@ mysql>
 Используя таблицу INFORMATION_SCHEMA.USER_ATTRIBUTES получите данные по пользователю `test` и 
 **приведите в ответе к задаче**.
 
+*Ответ*
+* Создайте пользователя test в БД c паролем test-pass, используя:
+  - плагин авторизации mysql_native_password
+  - срок истечения пароля - 180 дней 
+  - количество попыток авторизации - 3 
+  - максимальное количество запросов в час - 100
+  - аттрибуты пользователя:
+      - Фамилия "Pretty"
+      - Имя "James"
+
+```shell
+mysql> create user `test` identified by 'test-pass';
+Query OK, 0 rows affected (0.03 sec)
+mysql> ALTER user 'test' 
+    -> with max_queries_per_hour 100
+    -> password expire interval 180 day
+    -> failed_login_attempts 3 password_lock_time 2;
+Query OK, 0 rows affected (0.02 sec)
+mysql> alter user 'test' attribute '{"f-name":"James", "l-name":"Pretty"}';
+Query OK, 0 rows affected (0.01 sec)
+
+```
+* Предоставьте привелегии пользователю test на операции SELECT базы test_db.
+```shell
+mysql> grant select on test_db.* to 'test';
+Query OK, 0 rows affected (0.01 sec)
+```
+* Используя таблицу INFORMATION_SCHEMA.USER_ATTRIBUTES получите данные по пользователю test и приведите в ответе к задаче.
+```shell
+mysql> select * from INFORMATION_SCHEMA.USER_ATTRIBUTES;
++------------------+-----------+-----------------------------------------+
+| USER             | HOST      | ATTRIBUTE                               |
++------------------+-----------+-----------------------------------------+
+| root             | %         | NULL                                    |
+| test             | %         | {"f-name": "James", "l-name": "Pretty"} |
+| mysql.infoschema | localhost | NULL                                    |
+| mysql.session    | localhost | NULL                                    |
+| mysql.sys        | localhost | NULL                                    |
+| root             | localhost | NULL                                    |
++------------------+-----------+-----------------------------------------+
+6 rows in set (0.00 sec)
+
+```
 ## Задача 3
 
 Установите профилирование `SET profiling = 1`.
@@ -257,6 +300,7 @@ mysql>
 Измените `engine` и **приведите время выполнения и запрос на изменения из профайлера в ответе**:
 - на `MyISAM`
 - на `InnoDB`
+
 
 ## Задача 4 
 
