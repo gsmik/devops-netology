@@ -304,15 +304,80 @@
 провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499).
 
 Предложите SQL-транзакцию для проведения данной операции.
-
 Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?
+*Ответ*
++ Архитектор и администратор БД выяснили, что ваша таблица orders разрослась до невиданных размеров и
+поиск по ней занимает долгое время. Вам, как успешному выпускнику курсов DevOps в нетологии предложили
+провести разбиение таблицы на 2 (шардировать на orders_1 - price>499 и orders_2 - price<=499)
 
+  Предложите SQL-транзакцию для проведения данной операции.
+  ```sql
+  begin;
+    alter table orders rename to orders_bak;
+    create table orders (
+        like orders_bak
+        including defaults
+        including constraints
+        including indexes
+    );
+    
+    create table orders_1 (
+        check ( price > 499 )
+    ) inherits (orders);
+    alter table orders_1 owner to postgres;
+    
+   
+    create table orders_2 (
+       check ( price <= 499 )
+    ) inherits (orders);
+    alter table orders_2 owner to postgres;
+  
+    
+    create index orders_1_price ON orders_1 (price);
+    create index orders_2_price ON orders_2 (price);
+  
+  
+    create rule ins_over_price as
+    on insert to orders where 
+      (price>499)
+    do instead
+      insert into orders_1 values(NEW.*);
+  
+  
+    create rule ins_lower_price as
+    on insert to orders where 
+      (price<=499)
+    do instead
+      insert into orders_2 values(NEW.*);
+      
+  
+    insert into orders
+    select * from orders_bak;
+    
+  
+    alter table orders_bak alter id drop default;
+    alter sequence public.orders_id_seq OWNED BY public.orders.id;
+  end;
+  commit;
+  ```
+Можно ли было изначально исключить "ручное" разбиение при проектировании таблицы orders?
+*Ответ*
+Можно, при создании таблицы сразу ее шардировать и содать правила шардирования
 ## Задача 4
 
-Используя утилиту `pg_dump` создайте бекап БД `test_database`.
+Используя утилиту `pg_dump` создайте бекап БД `test_database`
 
 Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца `title` для таблиц `test_database`?
-
+*Ответ*
++ Используя утилиту `pg_dump` создайте бекап БД `test_database`
+  ```shell
+  root@3a4850287704:/# pg_dump -U postgres test_database -v -f /bak/test_database_$(date +"%Y%m%d-%H%M").sql
+  ```
++ Как бы вы доработали бэкап-файл, чтобы добавить уникальность значения столбца `title` для таблиц `test_database`?
+Нужно добавить уникальность
+```shell
+ALTER TABLE public.orders ADD UNIQUE (title);
+```
 ---
 
 ### Как cдавать задание
