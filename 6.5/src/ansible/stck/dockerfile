@@ -1,0 +1,22 @@
+FROM centos:7
+EXPOSE 9200
+ENV TZ=Europe/Moscow
+MAINTAINER gsmik
+RUN yum install java-11-openjdk-devel -y
+RUN yum install wget -y
+RUN yum install unzip -y
+RUN wget https://artifacts.opensearch.org/releases/bundle/opensearch/2.6.0/opensearch-2.6.0-linux-x64.tar.gz
+RUN tar -xzf opensearch-2.6.0-linux-x64.tar.gz
+ENV OS_JAVA_HOME=/opensearch-2.6.0/jdk/
+ENV OS_HOME=/opensearch-2.6.0
+COPY opensearch.yml /opensearch-2.6.0/config/
+RUN groupadd opensearch && useradd -g opensearch opensearch
+RUN mkdir /var/lib/logs
+RUN chown opensearch:opensearch /var/lib/logs
+RUN mkdir /var/lib/data
+RUN chown opensearch:opensearch /var/lib/data
+RUN mkdir -p "/opt/opensearch-2.6.0/snapshots"
+RUN chown -R opensearch:opensearch /opt/opensearch-2.6.0/snapshots
+RUN chown -R opensearch:opensearch /opensearch-2.6.0/
+USER opensearch
+CMD "${OS_HOME}/bin/opensearch"
