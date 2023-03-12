@@ -13,7 +13,7 @@ servers = [
     :ssh_host => "20011",
     :ssh_vm => "22",
     :ram => 4096,
-    :core => 4
+    :core => 2
   }
 ]
 
