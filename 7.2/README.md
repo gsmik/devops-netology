@@ -1053,6 +1053,31 @@ web = "158.160.50.19"
 2. Замените переменные с именами ВМ из файла variables.tf на созданные вами local переменные.
 3. Примените изменения.
 
+[](src/locals.tf)
+
+```shell
+ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  terraform apply 
+data.yandex_compute_image.ubuntu: Reading...
+data.yandex_compute_image.ubuntu_db: Reading...
+yandex_vpc_network.develop: Refreshing state... [id=enp357s0mkbmodl1dfk4]
+data.yandex_compute_image.ubuntu: Read complete after 1s [id=fd8snjpoq85qqv0mk9gi]
+data.yandex_compute_image.ubuntu_db: Read complete after 1s [id=fd8snjpoq85qqv0mk9gi]
+yandex_vpc_subnet.develop: Refreshing state... [id=e9b7v9aktdbtkit8lpj6]
+yandex_compute_instance.platform_db: Refreshing state... [id=fhmd6ehup9v70gldbkge]
+yandex_compute_instance.platform: Refreshing state... [id=fhmv2s17ol6peqh4s7a5]
+
+No changes. Your infrastructure matches the configuration.
+
+Terraform has compared your real infrastructure against your configuration and found no differences, so no changes are needed.
+
+Apply complete! Resources: 0 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+db = "84.201.133.96"
+web = "51.250.7.54"
+
+```
 
 ### Задание 6
 
