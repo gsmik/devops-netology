@@ -989,6 +989,7 @@ placement_policy: {}
 
 
 ```
+</details>
 
 ### Задание 4
 
