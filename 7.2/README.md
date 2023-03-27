@@ -411,8 +411,170 @@ Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 2. Замените все "хардкод" **значения** для ресурсов **yandex_compute_image** и **yandex_compute_instance** на **отдельные** переменные. К названиям переменных ВМ добавьте в начало префикс **vm_web_** .  Пример: **vm_web_name**. - готово
 3. Объявите нужные переменные в файле variables.tf, обязательно указывайте тип переменной. Заполните их **default** прежними значениями из main.tf. 
 
-[main.tf](src/main.tf)\
-[variables.tf](srv/variables.tf)
+<details>
+<summary>main.tf</summary>
+
+```terraform
+resource "yandex_vpc_network" "develop" {
+  name = var.vpc_name
+}
+resource "yandex_vpc_subnet" "develop" {
+  name           = var.vpc_name
+  zone           = var.default_zone
+  network_id     = yandex_vpc_network.develop.id
+  v4_cidr_blocks = var.default_cidr
+}
+
+
+/*data "yandex_compute_image" "ubuntu" {
+  family = "ubuntu-2004-lts"
+}
+resource "yandex_compute_instance" "platform" {
+  name        = "netology-develop-platform-web"
+  platform_id = "standard-v1"
+  resources {
+    cores         = 2
+    memory        = 1
+    core_fraction = 5
+  }
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.image_id
+    }
+  }
+  scheduling_policy {
+    preemptible = true
+  }
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = true
+  }
+*/
+data "yandex_compute_image" "ubuntu" {
+  family = var.vm_web_image
+}
+resource "yandex_compute_instance" "platform" {
+  name        = var.vm_web_instance.name
+  platform_id = var.vm_web_instance.platform_id
+  resources {
+    cores         = var.vm_web_instance.resources.cores
+    memory        = var.vm_web_instance.resources.memory
+    core_fraction = var.vm_web_instance.resources.core_fraction
+  }
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.image_id
+    }
+  }
+  scheduling_policy {
+    preemptible = var.vm_web_instance.scheduling_policy.preemptible
+  }
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = var.vm_web_instance.network_interface.nat
+  }
+  metadata = {
+    serial-port-enable = var.vm_web_instance.metadata.serial-port-enable
+    ssh-keys           = "${var.vms_ssh_user}:${var.vms_ssh_root_key}"
+  }
+}
+/*}
+  metadata = {_
+    serial-port-enable = 1
+    ssh-keys           = "ubuntu:${var.vms_ssh_root_key}"
+  }
+
+}
+*/
+
+
+```
+</details>
+
+<details>
+<summary>variables.tf</summary>
+
+```terraform
+###cloud vars
+variable "token" {
+  type        = string
+  description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
+}
+
+variable "cloud_id" {
+  type        = string
+  description = "https://cloud.yandex.ru/docs/resource-manager/operations/cloud/get-id"
+}
+
+variable "folder_id" {
+  type        = string
+  description = "https://cloud.yandex.ru/docs/resource-manager/operations/folder/get-id"
+}
+
+variable "default_zone" {
+  type        = string
+  default     = "ru-central1-a"
+  description = "https://cloud.yandex.ru/docs/overview/concepts/geo-scope"
+}
+variable "default_cidr" {
+  type        = list(string)
+  default     = ["10.0.1.0/24"]
+  description = "https://cloud.yandex.ru/docs/vpc/operations/subnet-create"
+}
+
+variable "vpc_name" {
+  type        = string
+  default     = "develop"
+  description = "VPC network & subnet name"
+}
+
+
+###ssh vars
+
+variable "vms_ssh_root_key" {
+  type        = string
+  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC98WcIWyNYxHuXDcL9/HWvd+Oy570VZx2cBzYL4z9HGLNMwVAxcdPjottkEYEBPa0ew+ZjzpMlDB171/o67R58+X4MPEiJlJeShAillW6EcWs1eb7e8D0sE+jGcuYCk+owyldJYCJOtkFWpMFjZ9MhBkLzwghVa+X03Gq/0pParx5OWElS32MtvhTlTehAdFU5UY6ym1Ueh4CXwfNE3v+PAHcG6f+EDIwZQsdeY5ApMpmP5hDj2y6EQhOoBCXnL0PITaJ+LGwnpAaPB4o4zn/1O/WeUC+cFoSPl83qSrzjMWGCrI/n+TlMMWJxv6nJTtZsIyieQaDkhA6M92lSUK9uKVlCAQjsBiwcP5o84fSsYbj2OT43HscBVmysfcIameIWO6ex7x2s5jsrBCK6ib4aqnXPIUoL8TfdFFoNmVzcLJzG5jJr8nQGQONRniygb7OnhT7A7c6by6Mgu0s/P2F2k+vlFPGgD/tpR+ja2DuLJMruMtxudgpINjdzvBNttrc= s3a1@s3a1-virtual-machine"
+  description = "ssh-keygen -t ed25519"
+}
+#vm vars task2
+variable "vm_web_image" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "OS image"
+}
+
+variable "vm_web_instance" {
+  type        = object({
+    name              = string,
+    platform_id       = string,
+    resources         = map(number),
+    scheduling_policy = map(bool),
+    network_interface = map(bool),
+    metadata          = map(number)
+  })
+  default     = {
+    name = "netology-develop-platform-web",
+    platform_id = "standard-v1",
+    resources = {
+      cores         = 2
+      memory        = 1
+      core_fraction = 5
+    },
+    scheduling_policy = { preemptible = true },
+    network_interface = { nat = true },
+    metadata          = { serial-port-enable = 1}
+  }
+  description = "resource instance variables"
+}
+
+variable "vms_ssh_user" {
+  type        = string
+  default     = "ubuntu"
+  description = "Root user for OS"
+}
+```
+</details>
+
 4. Проверьте terraform plan (изменений быть не должно).
    ![](img/2-1.png)
 
@@ -421,9 +583,412 @@ Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 ### Задание 3
 
 1. Создайте в корне проекта файл 'vms_platform.tf' . Перенесите в него все переменные ВМ.
-2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ: **"netology-develop-platform-db"** ,  cores  = 2, memory = 2, core_fraction = 20. Объявите ее переменные с префиксом **vm_db_** в том же файле. 
+2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ: **"netology-develop-platform-db"** ,  cores  = 2, memory = 2, core_fraction = 20. Объявите ее переменные с префиксом **vm_db_** в том же файле.
+
+
 3. Примените изменения.
 
+
+
+*Ответ*
+1. Создайте в корне проекта файл 'vms_platform.tf' . Перенесите в него все переменные ВМ. - готово
+2. Скопируйте блок ресурса и создайте с его помощью вторую ВМ: **"netology-develop-platform-db"** ,  cores  = 2, memory = 2, core_fraction = 20. Объявите ее переменные с префиксом **vm_db_** в том же файле.
+
+<details>
+<summary>vms_platform.tf</summary>
+
+```terraform
+
+###ssh vars
+
+variable "vms_db_ssh_root_key" {
+  type        = string
+  default     = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC98WcIWyNYxHuXDcL9/HWvd+Oy570VZx2cBzYL4z9HGLNMwVAxcdPjottkEYEBPa0ew+ZjzpMlDB171/o67R58+X4MPEiJlJeShAillW6EcWs1eb7e8D0sE+jGcuYCk+owyldJYCJOtkFWpMFjZ9MhBkLzwghVa+X03Gq/0pParx5OWElS32MtvhTlTehAdFU5UY6ym1Ueh4CXwfNE3v+PAHcG6f+EDIwZQsdeY5ApMpmP5hDj2y6EQhOoBCXnL0PITaJ+LGwnpAaPB4o4zn/1O/WeUC+cFoSPl83qSrzjMWGCrI/n+TlMMWJxv6nJTtZsIyieQaDkhA6M92lSUK9uKVlCAQjsBiwcP5o84fSsYbj2OT43HscBVmysfcIameIWO6ex7x2s5jsrBCK6ib4aqnXPIUoL8TfdFFoNmVzcLJzG5jJr8nQGQONRniygb7OnhT7A7c6by6Mgu0s/P2F2k+vlFPGgD/tpR+ja2DuLJMruMtxudgpINjdzvBNttrc= s3a1@s3a1-virtual-machine"
+  description = "ssh-keygen -t ed25519"
+}
+variable "vms_db_ssh_user" {
+  type        = string
+  default     = "ubuntu"
+  description = "Root user for OS"
+}
+#vm vars task2
+variable "vm_db_image" {
+  type        = string
+  default     = "ubuntu-2004-lts"
+  description = "OS image"
+}
+
+variable "vm_db_instance" {
+  type        = object({
+    name              = string,
+    platform_id       = string,
+    resources         = map(number),
+    scheduling_policy = map(bool),
+    network_interface = map(bool),
+    metadata          = map(number)
+  })
+  default     = {
+    name = "netology-develop-platform-db",
+    platform_id = "standard-v1",
+    resources = {
+      cores         = 2
+      memory        = 2
+      core_fraction = 5
+    },
+    scheduling_policy = { preemptible = true },
+    network_interface = { nat = true },
+    metadata          = { serial-port-enable = 1}
+  }
+  description = "resource instance variables"
+}
+
+
+```
+</details>
+
+3. Примените изменения. (Почему так, потаму что экономный:) удаляю после каждого действия )))
+
+<details>
+<summary>terraform apply 4 resurces creating</summary>
+
+```terraform
+ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  terraform apply
+data.yandex_compute_image.ubuntu_db: Reading...
+data.yandex_compute_image.ubuntu: Reading...
+data.yandex_compute_image.ubuntu_db: Read complete after 0s [id=fd8snjpoq85qqv0mk9gi]
+data.yandex_compute_image.ubuntu: Read complete after 0s [id=fd8snjpoq85qqv0mk9gi]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # yandex_compute_instance.platform will be created
+  + resource "yandex_compute_instance" "platform" {
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hostname                  = (known after apply)
+      + id                        = (known after apply)
+      + metadata                  = {
+          + "serial-port-enable" = "1"
+          + "ssh-keys"           = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC98WcIWyNYxHuXDcL9/HWvd+Oy570VZx2cBzYL4z9HGLNMwVAxcdPjottkEYEBPa0ew+ZjzpMlDB171/o67R58+X4MPEiJlJeShAillW6EcWs1eb7e8D0sE+jGcuYCk+owyldJYCJOtkFWpMFjZ9MhBkLzwghVa+X03Gq/0pParx5OWElS32MtvhTlTehAdFU5UY6ym1Ueh4CXwfNE3v+PAHcG6f+EDIwZQsdeY5ApMpmP5hDj2y6EQhOoBCXnL0PITaJ+LGwnpAaPB4o4zn/1O/WeUC+cFoSPl83qSrzjMWGCrI/n+TlMMWJxv6nJTtZsIyieQaDkhA6M92lSUK9uKVlCAQjsBiwcP5o84fSsYbj2OT43HscBVmysfcIameIWO6ex7x2s5jsrBCK6ib4aqnXPIUoL8TfdFFoNmVzcLJzG5jJr8nQGQONRniygb7OnhT7A7c6by6Mgu0s/P2F2k+vlFPGgD/tpR+ja2DuLJMruMtxudgpINjdzvBNttrc= s3a1@s3a1-virtual-machine"
+        }
+      + name                      = "netology-develop-platform-web"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v1"
+      + service_account_id        = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = (known after apply)
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8snjpoq85qqv0mk9gi"
+              + name        = (known after apply)
+              + size        = (known after apply)
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options {
+          + aws_v1_http_endpoint = (known after apply)
+          + aws_v1_http_token    = (known after apply)
+          + gce_http_endpoint    = (known after apply)
+          + gce_http_token       = (known after apply)
+        }
+
+      + network_interface {
+          + index              = (known after apply)
+          + ip_address         = (known after apply)
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy {
+          + host_affinity_rules = (known after apply)
+          + placement_group_id  = (known after apply)
+        }
+
+      + resources {
+          + core_fraction = 5
+          + cores         = 2
+          + memory        = 1
+        }
+
+      + scheduling_policy {
+          + preemptible = true
+        }
+    }
+
+  # yandex_compute_instance.platform_db will be created
+  + resource "yandex_compute_instance" "platform_db" {
+      + created_at                = (known after apply)
+      + folder_id                 = (known after apply)
+      + fqdn                      = (known after apply)
+      + gpu_cluster_id            = (known after apply)
+      + hostname                  = (known after apply)
+      + id                        = (known after apply)
+      + metadata                  = {
+          + "serial-port-enable" = "1"
+          + "ssh-keys"           = "ubuntu:ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC98WcIWyNYxHuXDcL9/HWvd+Oy570VZx2cBzYL4z9HGLNMwVAxcdPjottkEYEBPa0ew+ZjzpMlDB171/o67R58+X4MPEiJlJeShAillW6EcWs1eb7e8D0sE+jGcuYCk+owyldJYCJOtkFWpMFjZ9MhBkLzwghVa+X03Gq/0pParx5OWElS32MtvhTlTehAdFU5UY6ym1Ueh4CXwfNE3v+PAHcG6f+EDIwZQsdeY5ApMpmP5hDj2y6EQhOoBCXnL0PITaJ+LGwnpAaPB4o4zn/1O/WeUC+cFoSPl83qSrzjMWGCrI/n+TlMMWJxv6nJTtZsIyieQaDkhA6M92lSUK9uKVlCAQjsBiwcP5o84fSsYbj2OT43HscBVmysfcIameIWO6ex7x2s5jsrBCK6ib4aqnXPIUoL8TfdFFoNmVzcLJzG5jJr8nQGQONRniygb7OnhT7A7c6by6Mgu0s/P2F2k+vlFPGgD/tpR+ja2DuLJMruMtxudgpINjdzvBNttrc= s3a1@s3a1-virtual-machine"
+        }
+      + name                      = "netology-develop-platform-db"
+      + network_acceleration_type = "standard"
+      + platform_id               = "standard-v1"
+      + service_account_id        = (known after apply)
+      + status                    = (known after apply)
+      + zone                      = (known after apply)
+
+      + boot_disk {
+          + auto_delete = true
+          + device_name = (known after apply)
+          + disk_id     = (known after apply)
+          + mode        = (known after apply)
+
+          + initialize_params {
+              + block_size  = (known after apply)
+              + description = (known after apply)
+              + image_id    = "fd8snjpoq85qqv0mk9gi"
+              + name        = (known after apply)
+              + size        = (known after apply)
+              + snapshot_id = (known after apply)
+              + type        = "network-hdd"
+            }
+        }
+
+      + metadata_options {
+          + aws_v1_http_endpoint = (known after apply)
+          + aws_v1_http_token    = (known after apply)
+          + gce_http_endpoint    = (known after apply)
+          + gce_http_token       = (known after apply)
+        }
+
+      + network_interface {
+          + index              = (known after apply)
+          + ip_address         = (known after apply)
+          + ipv4               = true
+          + ipv6               = (known after apply)
+          + ipv6_address       = (known after apply)
+          + mac_address        = (known after apply)
+          + nat                = true
+          + nat_ip_address     = (known after apply)
+          + nat_ip_version     = (known after apply)
+          + security_group_ids = (known after apply)
+          + subnet_id          = (known after apply)
+        }
+
+      + placement_policy {
+          + host_affinity_rules = (known after apply)
+          + placement_group_id  = (known after apply)
+        }
+
+      + resources {
+          + core_fraction = 5
+          + cores         = 2
+          + memory        = 2
+        }
+
+      + scheduling_policy {
+          + preemptible = true
+        }
+    }
+
+  # yandex_vpc_network.develop will be created
+  + resource "yandex_vpc_network" "develop" {
+      + created_at                = (known after apply)
+      + default_security_group_id = (known after apply)
+      + folder_id                 = (known after apply)
+      + id                        = (known after apply)
+      + labels                    = (known after apply)
+      + name                      = "develop"
+      + subnet_ids                = (known after apply)
+    }
+
+  # yandex_vpc_subnet.develop will be created
+  + resource "yandex_vpc_subnet" "develop" {
+      + created_at     = (known after apply)
+      + folder_id      = (known after apply)
+      + id             = (known after apply)
+      + labels         = (known after apply)
+      + name           = "develop"
+      + network_id     = (known after apply)
+      + v4_cidr_blocks = [
+          + "10.0.1.0/24",
+        ]
+      + v6_cidr_blocks = (known after apply)
+      + zone           = "ru-central1-a"
+    }
+
+Plan: 4 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+
+yandex_vpc_network.develop: Creating...
+yandex_vpc_network.develop: Creation complete after 0s [id=enpo8i9hs1lgtp8f36h2]
+yandex_vpc_subnet.develop: Creating...
+yandex_vpc_subnet.develop: Creation complete after 1s [id=e9bersod165h8hk3h28r]
+yandex_compute_instance.platform_db: Creating...
+yandex_compute_instance.platform: Creating...
+yandex_compute_instance.platform: Still creating... [10s elapsed]
+yandex_compute_instance.platform_db: Still creating... [10s elapsed]
+yandex_compute_instance.platform_db: Still creating... [20s elapsed]
+yandex_compute_instance.platform: Still creating... [20s elapsed]
+yandex_compute_instance.platform: Still creating... [30s elapsed]
+yandex_compute_instance.platform_db: Still creating... [30s elapsed]
+yandex_compute_instance.platform: Creation complete after 32s [id=fhmjls2ejh1mslr9d43d]
+yandex_compute_instance.platform_db: Creation complete after 37s [id=fhmi0790gjjbkvdakv2c]
+
+Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
+
+```
+</details>
+
+<details>
+<summary>Result resurces creating</summary>
+
+```shell
+ ✘ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  yc compute  instance list --format text
++----------------------+-------------------------------+---------------+---------+---------------+-------------+
+|          ID          |             NAME              |    ZONE ID    | STATUS  |  EXTERNAL IP  | INTERNAL IP |
++----------------------+-------------------------------+---------------+---------+---------------+-------------+
+| fhmi0790gjjbkvdakv2c | netology-develop-platform-db  | ru-central1-a | RUNNING | 51.250.68.24  | 10.0.1.31   |
+| fhmjls2ejh1mslr9d43d | netology-develop-platform-web | ru-central1-a | RUNNING | 62.84.116.252 | 10.0.1.25   |
++----------------------+-------------------------------+---------------+---------+---------------+-------------+
+ 
+ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  yc compute instance get fhmi0790gjjbkvdakv2c
+id: fhmi0790gjjbkvdakv2c
+folder_id: b1g5f9lqj5kqgmgtcq7m
+created_at: "2023-03-27T16:02:13Z"
+name: netology-develop-platform-db
+zone_id: ru-central1-a
+platform_id: standard-v1
+resources:
+  memory: "2147483648"
+  cores: "2"
+  core_fraction: "5"
+status: RUNNING
+metadata_options:
+  gce_http_endpoint: ENABLED
+  aws_v1_http_endpoint: ENABLED
+  gce_http_token: ENABLED
+  aws_v1_http_token: DISABLED
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmbo4ollm5fuvohapq6
+  auto_delete: true
+  disk_id: fhmbo4ollm5fuvohapq6
+network_interfaces:
+  - index: "0"
+    mac_address: d0:0d:12:01:d2:08
+    subnet_id: e9bersod165h8hk3h28r
+    primary_v4_address:
+      address: 10.0.1.31
+      one_to_one_nat:
+        address: 51.250.68.24
+        ip_version: IPV4
+fqdn: fhmi0790gjjbkvdakv2c.auto.internal
+scheduling_policy:
+  preemptible: true
+network_settings:
+  type: STANDARD
+placement_policy: {}
+d: fhmjls2ejh1mslr9d43d
+folder_id: b1g5f9lqj5kqgmgtcq7m
+created_at: "2023-03-27T16:02:13Z"
+name: netology-develop-platform-web
+zone_id: ru-central1-a
+platform_id: standard-v1
+resources:
+  memory: "1073741824"
+  cores: "2"
+  core_fraction: "5"
+status: RUNNING
+metadata_options:
+  gce_http_endpoint: ENABLED
+  aws_v1_http_endpoint: ENABLED
+  gce_http_token: ENABLED
+  aws_v1_http_token: DISABLED
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmlmmtkq92m3ci9u96m
+  auto_delete: true
+  disk_id: fhmlmmtkq92m3ci9u96m
+network_interfaces:
+  - index: "0"
+    mac_address: d0:0d:13:af:04:e9
+    subnet_id: e9bersod165h8hk3h28r
+    primary_v4_address:
+      address: 10.0.1.25
+      one_to_one_nat:
+        address: 62.84.116.252
+        ip_version: IPV4
+fqdn: fhmjls2ejh1mslr9d43d.auto.internal
+scheduling_policy:
+  preemptible: true
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  yc compute instance get fhmjls2ejh1mslr9d43d
+id: fhmjls2ejh1mslr9d43d
+folder_id: b1g5f9lqj5kqgmgtcq7m
+created_at: "2023-03-27T16:02:13Z"
+name: netology-develop-platform-web
+zone_id: ru-central1-a
+platform_id: standard-v1
+resources:
+  memory: "1073741824"
+  cores: "2"
+  core_fraction: "5"
+status: RUNNING
+metadata_options:
+  gce_http_endpoint: ENABLED
+  aws_v1_http_endpoint: ENABLED
+  gce_http_token: ENABLED
+  aws_v1_http_token: DISABLED
+boot_disk:
+  mode: READ_WRITE
+  device_name: fhmlmmtkq92m3ci9u96m
+  auto_delete: true
+  disk_id: fhmlmmtkq92m3ci9u96m
+network_interfaces:
+  - index: "0"
+    mac_address: d0:0d:13:af:04:e9
+    subnet_id: e9bersod165h8hk3h28r
+    primary_v4_address:
+      address: 10.0.1.25
+      one_to_one_nat:
+        address: 62.84.116.252
+        ip_version: IPV4
+fqdn: fhmjls2ejh1mslr9d43d.auto.internal
+scheduling_policy:
+  preemptible: true
+network_settings:
+  type: STANDARD
+placement_policy: {}
+
+
+```
 
 ### Задание 4
 
@@ -432,7 +997,55 @@ Apply complete! Resources: 1 added, 0 changed, 0 destroyed.
 
 В качестве решения приложите вывод значений ip-адресов команды ```terraform output```
 
+*Ответ*
 
+1. Объявите в файле outputs.tf отдельные output, для каждой из ВМ с ее внешним IP адресом.
+```terraform
+output "web" {
+    value = yandex_compute_instance.platform.network_interface[0].nat_ip_address
+}
+output "db" {
+  value = yandex_compute_instance.platform_db.network_interface[0].nat_ip_address
+}
+
+```
+
+2. Примените изменения. (Ну тут опять terraform apply с уже измененым файлом outputs.tf)
+
+<details>
+<summary>terraform apply result</summary> 
+
+```shell
+yandex_vpc_network.develop: Creating...
+yandex_vpc_network.develop: Creation complete after 1s [id=enpcf5rgauo4thj010t3]
+yandex_vpc_subnet.develop: Creating...
+yandex_vpc_subnet.develop: Creation complete after 1s [id=e9bk3pr53t8thd81rb2m]
+yandex_compute_instance.platform: Creating...
+yandex_compute_instance.platform_db: Creating...
+yandex_compute_instance.platform: Still creating... [10s elapsed]
+yandex_compute_instance.platform_db: Still creating... [10s elapsed]
+yandex_compute_instance.platform: Still creating... [20s elapsed]
+yandex_compute_instance.platform_db: Still creating... [20s elapsed]
+yandex_compute_instance.platform: Creation complete after 29s [id=fhmseu8jpjv59r4atobd]
+yandex_compute_instance.platform_db: Still creating... [30s elapsed]
+yandex_compute_instance.platform_db: Creation complete after 33s [id=fhma77oragtl1n4u3m0a]
+
+Apply complete! Resources: 4 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+db = "158.160.34.12"
+web = "158.160.50.19"
+```
+</details>
+
+
+```terraform
+
+ s3a1@s3a1-virtual-machine  ~/learning/7.2/src   main ±✚  terraform output 
+db = "158.160.34.12"
+web = "158.160.50.19"
+```
 ### Задание 5
 
 1. В файле locals.tf опишите в **одном** local-блоке имя каждой ВМ, используйте интерполяцию по примеру из лекции.

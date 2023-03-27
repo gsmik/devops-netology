@@ -56,7 +56,7 @@ resource "yandex_compute_instance" "platform" {
     subnet_id = yandex_vpc_subnet.develop.id
     nat       = var.vm_web_instance.network_interface.nat
   }
-  metadata = {
+metadata = {
     serial-port-enable = var.vm_web_instance.metadata.serial-port-enable
     ssh-keys           = "${var.vms_ssh_user}:${var.vms_ssh_root_key}"
   }
@@ -69,4 +69,33 @@ resource "yandex_compute_instance" "platform" {
 
 }
 */
-
+#
+#-----db-----
+data "yandex_compute_image" "ubuntu_db" {
+  family = var.vm_db_image
+}
+resource "yandex_compute_instance" "platform_db" {
+  name        = var.vm_db_instance.name
+  platform_id = var.vm_db_instance.platform_id
+  resources {
+    cores         = var.vm_db_instance.resources.cores
+    memory        = var.vm_db_instance.resources.memory
+    core_fraction = var.vm_db_instance.resources.core_fraction
+  }
+  boot_disk {
+    initialize_params {
+      image_id = data.yandex_compute_image.ubuntu.image_id
+    }
+  }
+  scheduling_policy {
+    preemptible = var.vm_db_instance.scheduling_policy.preemptible
+  }
+  network_interface {
+    subnet_id = yandex_vpc_subnet.develop.id
+    nat       = var.vm_db_instance.network_interface.nat
+  }
+  metadata = {
+    serial-port-enable = var.vm_db_instance.metadata.serial-port-enable
+    ssh-keys           = "${var.vms_db_ssh_user}:${var.vms_db_ssh_root_key}"
+  }
+}
